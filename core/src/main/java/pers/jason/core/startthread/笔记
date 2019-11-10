@@ -1,0 +1,20 @@
+start()：
+    由主线程执行；
+    通知JVM，在有空闲的情况下启动新线程；
+    调用start()方法后，线程并不一定会立即运行；
+    新线程处于就绪状态（获取到了除了CPU以外的其他资源）；
+
+    start()的执行流程：
+      1. 检查线程状态（在运行中或已经结束的线程都不能再次启动）；
+      2. 加入线程组；
+      3. 调用 private native void start0()启动线程；
+
+    注意：
+        - 不能多次调用start()方法，否则抛出 IllegalThreadStateException 异常；
+          源码：
+          public synchronized void start() {
+            if (threadStatus != 0)
+                throw new IllegalThreadStateException();
+            ...
+          }
+          零状态值对应于状态“NEW”。第二次start()的时候状态已经不是new了；

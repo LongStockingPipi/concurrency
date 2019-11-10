@@ -1,0 +1,64 @@
+停止线程
+
+什么时候需要停止线程？
+我们希望提前结束线程,或是因为用户取消了操作,或服务需要被快速关闭，或是运行超时或出错了。
+
+Java如何停止线程？
+Java没有提供任何机制来安全地终止线程。但它提供了中断( Interruption),这是一种协作机制,能够使一个线程终止另一个线程的当前工作。
+
+1. 原理：使用interrupt来通知，而不是强制
+    在Java中，最好的停止线程的方式是使用中断interrupt，但是这仅仅是会通知到被终止的线程“你该停止运行了”，
+    被终止的线程自身拥有决定权（决定是否、以及何时停止），这依赖于请求停止方和被停止方都遵守一种约定好的编码规范。
+
+2. 如何停止
+    - 普通情况下：
+        2.1. 使用thread.interrupt();
+        2.2. 子线程的run()中要对 currentThread 的 isInterrupted() 进行监控
+    - 阻塞状态下：
+    处于阻塞（sleep、wait等）状态下的线程，当被调用interrupt()的时候，会通过抛出InterruptException异常来相应中断；
+    迭代无需每次都检测是否收到中断信号，因为sleep()、wait()等方法会自动检测，若有中断，则抛异常;
+    因此：
+        catch住InterruptedException后，显示地在方法签名中抛出异常，这样，run()方法只能catch处理；
+
+    注意：
+        一旦sleep()响应中断，子线程的interrupt标记为就会被清除，这样的话，如果catch() {}中没有及时处理中断，
+        那么代码依旧会继续执行下去，即使后续会对interrupt进行检测，但是由于曾经响应过中断，标记为被清除，
+        因此依旧会认为当前线程未被中断过；
+
+    综上：
+    要想停止中断，可以进行底层方法的中断传递（显示声明方法异常），或者底层方法恢复中断（catch住了异常再显示恢复中断标记），万万不可屏蔽中断；
+
+3. 能够响应中断的方法（方法执行过程中，可以感知到中断信号）：
+    Object.wait()系列
+    Thread.sleep()系列
+    Thread.join()系列
+    java.util.concurrent.BlockingQueue.take()/put(E)
+    java.util.concurrent.locks.Lock.lockInterruptibly()
+    java.util.concurrent.CountDownLatch.await()
+    java.util.concurrent.CyclicBarrier.await()
+    java.util.concurrent.Exchanger.exchange(V)
+    java.nio.channels.InterruptibleChannel相关方法
+    java.nio.channels.Selector的相关方法
+
+4. 错误的停止方式：
+    4.1. stop()本身不安全，已经过时；
+    4.2. volatile标记位，由于阻塞方法（如sleep()等）只会响应中断，而对volatile标记位不会有察觉，因此如果处于阻塞状态的线程，即使标记位
+        已经发生变化，也依旧处于阻塞状态；
+
+5. 其他相关方法：
+    static boolean interrupted()：返回当前线程是否中断，同时清除当前线程中断状态
+    boolean isInterrupted()：返回线程是否被中断
+    练习：justforfun
+
+6. 面试题：
+
+    6.1. 如何停止线程？
+    - 使用中断（interrupt）来停止线程；
+    - 这是一种协作机制,能够使一个线程终止另一个线程的当前工作，被终止的线程自身拥有决定权（决定是否、以及何时停止）。
+        具体可以使用传递中断或恢复中断；
+    - 而stop、suspend已经被废弃，stop不安全，suspend会造成死锁；volatile和boolean标记位无法处理处于阻塞状态的情况；
+
+    6.2. 如何处理不可中断的阻塞？
+        存在一些方法（如IO）本身会阻塞线程，同时又不会像wait()那样响应中断，这种阻塞称为“不可中断的阻塞”。
+        无通用的处理方法，针对特定的情况，使用特定的方法，如：ReentrantLock.lockInterruptibly()、关闭套接字使线程立即返回等
+

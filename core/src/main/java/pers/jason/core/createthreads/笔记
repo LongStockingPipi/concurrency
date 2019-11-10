@@ -1,0 +1,49 @@
+实现多线程有两种方式：
+    - 继承Thread类
+    - 实现Runnable接口（更好）
+
+区别：
+  内部实现本质没区别，都是新建了Thread类，都是调用start()启动线程，不过对于run()方法的实现，
+  继承Thread类是通过覆盖父类run()实现多线程逻辑；
+  实现Runnable接口是通过组合来调用target.run()；
+  具体代码：Thread中：
+  public Thread(Runnable target);
+  @Override
+  public void run() {
+      if (target != null) {
+          target.run();
+      }
+  }
+
+
+问题：
+
+1. 为什么不选择继承Thread类？
+ 1. 从结构的角度：任务应和线程结偶
+ 2. 从效率性能角度：一个任务一个线程，代价很大，用Runnable有池，效率高
+ 3. 从开发设计上：java不支持多继承。扩展性不好
+
+
+2. ThreadPool怎么实现多线程？
+本质上也是使用了继承Runnable接口的方式。
+具体代码：
+public Thread newThread(Runnable r) {
+    Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+    ...
+}
+
+3. Callable接口怎么实现多线程？
+
+4. 定时器怎么实现多线程？
+
+面试题：
+
+1. 有多少种实现多线程的方法？
+代码层次上，实现多线程有很多方式，如继承Thread类，实现Runnable、Callable接口、匿名内部类（lambda表达式）、定时器、线程池等，
+但内部实现归根结底还是基于继承Thread类，实现Runnable两种方式，但是这两种方式本质没有区别，只是继承Thread类是覆盖了Thread的run()方法，
+而实现Runnable接口则是组合的方式调用target.run()方法；
+
+2. 继承Thread类和实现Runnable接口哪种更好？
+ - 从结构的角度：任务应和线程结偶
+ - 从效率性能角度：一个任务一个线程，代价很大，用Runnable有池，效率高
+ - 从开发设计上：java不支持多继承。扩展性不好

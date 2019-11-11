@@ -1,0 +1,33 @@
+线程的六种状态：
+1. New：已经创建，但是没有启动的线程（执行.start()之前）
+2. Runnable：调用.start()之后
+3. Blocked：线程执行synchronized代码块，但无法获得锁的时候（等待排它锁monitor）
+4. Waiting：调用.wait()、.join()、LockSupport.park()方法后
+5. Timed Waiting：调用.sleep(time)、.wait(time)、LockSupport.parkNanos(time)、LockSupport.parkUtil(time)方法后
+6. Terminated：执行完成或抛出异常
+
+    [NEW]新创建                           [BLOCKED]被阻塞
+      |                                   -+-  /
+      |                                   /   /
+      |                                  /   /
+      |                                 /   /
+ Thread.start()        synchronized代码块   获得monitor锁
+      |                               /   /
+      |                              /   /                           LockSupport.park()
+      |                             /   /                            Thread.join()         ->
+     -+-                           /  -+-                            Object.wait()
+  [RUNNABLE] -------------------------------<-------------------------------------------------------------> [WAITING]等待
+      |                            \  -+-                            Object.notify()
+      |                             \   \                            Object.notifyAll()    <-
+      |                              \   \                           LockSupport.unPark()
+   执行完成          Object.notify()   \   \     Thread.sleep(time)
+      |             Object.notifyAll() \   \    Object.wait(time)
+      |             LockSupport.unPark()\   \   Thread.join(time)
+      |                                  \   \  LockSupport.parkNanos(time)
+      |                                   \   \ LockSupport.parkUtil(time)
+     -+-                                  -+-  \
+ [TERMINATED] 已终止                    [TIME_WAITING]计时等待
+
+
+什么是阻塞状态？
+一般而言，BLOCKED、WAITING、TIME_WAITING均称为阻塞；

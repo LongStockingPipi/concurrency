@@ -26,7 +26,7 @@ public class RightStop implements Runnable {
 
     thread.start();
 
-    Thread.sleep(1000);
+    Thread.sleep(50);
 
     thread.interrupt();
   }

@@ -16,6 +16,7 @@ public class RightStopWithSleep {
       try {
         Thread.sleep(8000);
       } catch (InterruptedException e) {
+        System.out.println("线程" + threadName + "停止运行：" + e.getMessage());
         e.printStackTrace();
       }
       System.out.println(threadName + "执行完成，耗时：" + ( System.currentTimeMillis() - now) + "ms");

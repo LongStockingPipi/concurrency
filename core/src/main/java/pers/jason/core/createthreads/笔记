@@ -44,6 +44,6 @@ public Thread newThread(Runnable r) {
 而实现Runnable接口则是组合的方式调用target.run()方法；
 
 2. 继承Thread类和实现Runnable接口哪种更好？
- - 从结构的角度：任务应和线程结偶
+ - 从结构的角度：任务应和线程解耦
  - 从效率性能角度：一个任务一个线程，代价很大，用Runnable有池，效率高
  - 从开发设计上：java不支持多继承。扩展性不好

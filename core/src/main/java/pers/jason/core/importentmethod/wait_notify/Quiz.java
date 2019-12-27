@@ -1,4 +1,4 @@
-package pers.jason.core.importentmethod.blockedstate;
+package pers.jason.core.importentmethod.wait_notify;
 
 /**
  * 测试题：两个线程交替打印0~100的奇偶数

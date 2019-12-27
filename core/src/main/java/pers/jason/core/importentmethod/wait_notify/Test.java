@@ -1,4 +1,4 @@
-package pers.jason.core.importentmethod.blockedstate;
+package pers.jason.core.importentmethod.wait_notify;
 
 /**
  * 线程1同步代码块中，同步对象调用wait后，该线程便释放锁，此时线程2获取对象锁，并调用对象的notify()方法，

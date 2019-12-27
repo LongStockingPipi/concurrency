@@ -9,6 +9,7 @@
         1.4.2. 其他线程调用该锁对象的notifyAll()；
         1.4.3. 该线程被其他线程中断；
         1.4.4. 执行wait()的时候设置了超时时间，到了超时时间后自动唤醒（传入0则是永久等待）；
+    1.5. wait()方法拥有响应中断的能力；
 2. notify()、notifyAll()：
     2.1. notify()只会随机唤醒其中一个线程；notifyAll()则会唤醒所有线程；
     2.2. notify()、notifyAll()方法必须在synchronized代码块中使用；

@@ -1,4 +1,4 @@
-package pers.jason.core.importentmethod.blockedstate;
+package pers.jason.core.importentmethod.wait_notify;
 
 /**
  * 使用 wait notify实现线程交替工作，相比于只使用synchronized，减少多次无用的锁争夺

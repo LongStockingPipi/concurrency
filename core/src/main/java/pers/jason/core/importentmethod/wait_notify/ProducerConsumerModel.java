@@ -1,4 +1,4 @@
-package pers.jason.core.importentmethod.blockedstate;
+package pers.jason.core.importentmethod.wait_notify;
 
 import java.util.ArrayList;
 import java.util.List;

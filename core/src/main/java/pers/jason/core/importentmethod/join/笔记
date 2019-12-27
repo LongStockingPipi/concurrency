@@ -1,0 +1,15 @@
+join()方法：新线程加入我们，我们等待新线程执行完成后再执行(可以理解为主线程等待子线程执行一些初始化工作)；
+
+注意：
+1. 主线程等待子线程的过程中，被中断之后并不会影响子线程的运行；
+2. 主线程等待子线程的过程中，状态是WAITING
+
+原理：
+join本身内部使用的是wait()和notifyAll()实现的，主线程调用子线程的join()方法后，主线程调用wait(0)等待（join(timeout)是同步方法）
+，由于锁对象是子线程实例，因此锁对象是一个Thread对象，而Thread对象在执行完run()方法后会自动调用notifyAll()，这样就唤醒了处于等待状态的主线程。
+childThread.join()等价于下面的代码：
+synchronized(childThread) {
+    wait();
+}
+
+关于join()功能，现在有成熟的工具类：CountDownLatch和CyclicBarrier

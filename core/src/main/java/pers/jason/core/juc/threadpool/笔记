@@ -1,0 +1,125 @@
+为什么使用线程池？
+    反复创建线程的开销大
+    过多的线程会占用太多的内存
+
+线程池的好处？
+    加快响应速度
+    合理利用CPU和内存
+    统一管理资源
+
+线程池的应用场合
+    服务器，服务器接受大量的请求，使用线程池可以大大减少线程创建和销毁的次数，提高服务器的工作效率
+    实际开发中需要同时创建五个以上的线程，就可以使用线程池管理
+
+线程池的构造参数：
+    corePoolSize：int，核心线程数
+    maxPoolSize：int，最大线程数
+    keepAliveTime：long，保持存活时间，当线程数量大于corePoolSize的时候，多余的线程的空闲时间如果超过keepAliveTime，则被终止
+    workQueue：BlockingQueue，任务存储队列，常见有三种：
+        直接交接：SynchronizedQueue，不做存储，相当于没有；
+        无界队列：LinkedBlockingQueue，没有上线，因此maxPoolSize会失效
+        有界队列：ArrayBlockingQueue
+    threadFactory：ThreadFactory，当线程池需要新的现成的时候，会使用ThreadFactory来创建线程
+    Handler：RejectExecutionHandler，线程池无法接受提交的任务的时候的拒绝策略
+
+线程池添加线程的规则：
+    当前线程数小于corePoolSize的时候，有新任务则创建线程，即使存储空闲线程
+    当前线程数大于等于corePoolSize但小于maxPoolSize的时候，有新任务则将任务添加到队列中
+    当前线程数大于等于corePoolSize但小于maxPoolSize，任务队列已满，有新任务则创建线程
+    当前线程数等于maxPoolSize，队列已满，则拒绝任务
+
+常见的线程池：
+    1. FixedThreadPool：
+        是大小固定的线程池，它在构建的时候，corePoolSize和maxPoolSize大小相等，且使用的是无界队列LinkedBlockingQueue
+        注意：由于队列无上限，如果任务请求过多，并且线程池没有及时处理完毕，导致任务堆积，会占用较大的内存，可能导致OOM
+        java.lang.OutOfMemoryError: GC overhead limit exceeded
+    2. SingleThreadExecutor：
+        线程数始终是1，它在构建的时候，corePoolSize和maxPoolSize大小都是1，且使用的是无界队列LinkedBlockingQueue。
+        由于数量始终是1，且队列无上限，跟FixedThreadPool一样容易导致OOM
+    3. CachedThreadPool：
+        可以缓存线程，无界线程池，且有自动回收多余线程的功能
+        使用的是SynchronizedQueue任务队列，队列大小为0，corePoolSize为0，maxPoolSize是Integer.MAX_VALUE，keepAliveTime是60s
+        无限创建的任务可以导致OOM
+    4. ScheduledThreadPool：
+        支持定时、周期性的执行任务
+        maxPoolSize是Integer.MAX_VALUE，keepAliveTime是0，任务队列使用DelayedWorkQueue延迟队列
+
+线程池的核心数量大小多少合适？
+    任务是CPU密集型的，加密、计算哈希等，最佳线程数是CPU核心数的1~2倍左右
+    任务是耗时IO型，文件读写，网络通信等，最佳线程数是CPU核心数的数倍
+    综上：线程数=CPU核心数*(1 + 平均等待时间/平均工作时间)
+
+如何停止线程？
+    shutdown()，通知线程池需要停止工作，线程池会拒绝以后的任务请求，但是会执行完已经接受的所有任务，直到所有任务执行完才停止，拒绝后续任务会抛出java.util.concurrent.RejectedExecutionException异常
+    isShutDown()：判断线程池是都已经进入停止状态（停止状态不代表任务执行完毕，而是拒绝新任务）
+    isTerminated()：判断线程是否停止运行；
+    awaitTermination()：测试一段时间内，如果任务都执行完毕，则返回true，否则返回false
+    shutdownNow()：立即停止线程，正则执行的线程会收到中断信号，正在队列的任务则直接作为返回值返回
+
+线程池拒绝任务的时机：
+    1. 线程池被关闭了
+    2. 线程池运行的线程达到了maxPoolSize，同时任务队列已经满了
+
+线程池拒绝任务的四种策略：
+    1. AbortPolicy：直接抛出异常
+    2. DiscardPolicy：直接丢弃任务，不会通知
+    3. DiscardOldestPolicy：同新任务替换队列中最老的任务，并丢弃老任务
+    4. CallerRunsPolicy：让提交任务的线程去执行任务
+
+线程池的组成部分：
+    线程池管理器
+    工作线程
+    任务队列：多个线程取，必须支持并发的BlockingQueue
+    任务接口
+
+Executor家族：
+    <Executor> <- <ExecutorService> <- [AbstractExecutorService] <- [ThreadPoolExecutor]
+    1. Executor，顶层接口，拥有execute()执行方法
+    2. ExecutorService：在Executor基础上，新增了功能方法，如shutdown()、submit()等
+    3. Executors，是一个工具类，提供快速创建各种线程池等方法
+
+线程池实现线程复用的原理：
+    用相同的线程执行不同的任务，在ThreadPoolExecutor的execute()方法中：
+    public void execute(Runnable command) {
+            if (command == null)
+                throw new NullPointerException();
+            int c = ctl.get();
+            if (workerCountOf(c) < corePoolSize) {
+                if (addWorker(command, true))
+                    return;
+                c = ctl.get();
+            }
+            if (isRunning(c) && workQueue.offer(command)) {
+                int recheck = ctl.get();
+                if (! isRunning(recheck) && remove(command))
+                    reject(command);
+                else if (workerCountOf(recheck) == 0)
+                    addWorker(null, false);
+            }
+            else if (!addWorker(command, false))
+                reject(command);
+        }
+    分三步进行:
+
+    1。如果运行的线程小于corePoolSize，请尝试这样做
+    使用给定的命令启动一个新线程的任务。对addWorker的调用将自动检查runState和
+    workerCount，这样可以防止添加错误警报当它不应该线程，通过返回false。
+
+    2。如果一个任务可以成功排队，那么我们仍然需要
+    再次检查是否应该添加线程
+    (因为上次检查后现有的已经死了)
+    进入此方法后，池关闭。所以我们
+    重新检查状态，如果需要，回滚排队
+    停止，或者如果没有新线程，则启动新线程。
+
+    3所示。如果无法对任务进行排队，则尝试添加一个新任务
+    线程。如果它失败了，我们知道我们被关闭或饱和了
+    所以拒绝这个任务。
+
+
+线程池的五种状态：
+    1. RUNNING：接收新任务并处理排队任务
+    2. SHUTDOWN：不接收新任务，但处理排队任务
+    3. STOP：不接收新任务，不处理排队任务，中断正在执行的任务
+    4. TIDYING：中文是整洁，所有任务都已经终止，workerCount为0，并运行terminate()钩子方法
+    5. TERMINATED：terminate()方法运行完成

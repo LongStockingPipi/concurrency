@@ -1,0 +1,23 @@
+并发工具类
+
+分类：
+    1. 为了并发安全：
+        1.1. 从底层原理分类：
+            1.1.1. 互斥同步：
+                各种互斥锁，synchronized、ReentrantLock（可重入锁）、ReadWriteLock（读写锁）等
+                同步工具类，Collections.synchronizedList()，本质使用锁
+            1.1.2. 非互斥同步:
+                atomic包，原子类：
+            1.1.3. 结合互斥和非互斥同步：
+                线程安全的并发容器
+            1.1.4. 无同步方案、不可变
+                final关键字
+                线程封闭：ThreadLocal、栈封闭
+        1.2. 从使用者角度分类：
+            1.2.1. 避免共享变量
+            1.2.2. 共享变量，但加以限制处理：互斥同步或final
+            1.2.3. 使用成熟工具类
+    2. 管理线程，提高效率
+        2.1. 线程池相关：Executor、Executors、ExecutorService以及常见线程池
+        2.2. 能获取子线程运行结果的相关类：Callable、Future、FutureTask等
+    3. 线程协作

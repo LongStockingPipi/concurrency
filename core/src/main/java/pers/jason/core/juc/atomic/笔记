@@ -28,3 +28,14 @@
 6. Accumulator累加器
     LongAccumulator
     DoubleAccumulator
+
+
+CAS
+1. 思路：首先认为值是A，如果是，则把他改成B。如果不是A（说明被其他人修改过），那我就不修改了。即：
+    CAS有三个操作数，内存值V，预期值A，修改值B，当且仅当V=A的时候，才将V修改成B，否则什么都不做；
+2. 应用：
+    1. 原子类：AtomicInteger中，使用Unsafe的compareAndSwapInt()方法
+    2. 乐观锁
+3. 缺点：
+    ABA问题：即使在判断的时候判断是否与预期值相等，也有可能值曾经被修改过，只不过修改后的值与预期值相等；
+    自旋时间可能很长，竞争激烈的情况下cpu消耗可能很高；

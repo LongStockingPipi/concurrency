@@ -1,0 +1,30 @@
+原子类的作用和锁类似，是为了保证并发情况下的线程安全，但是相对于锁，原子类有一定的优势：
+粒度更细：原子变量可以把竞争范围缩小到变量级别
+效率更高：通常情况下原子类的效率要高于锁
+
+都有哪些原子类：
+1. Atomic*基本类型原子类：
+    AtomicInteger
+    AtomicLong
+    AtomicBoolean
+2. Atomic*Array数组类型原子类：
+    AtomicIntegerArray
+    AtomicLongArray
+    AtomicReferenceArray
+3. Atomic*Reference引用类型原子类：
+    AtomicReference
+    AtomicStampedReference
+    AtomicMarkableReference
+4. Atomic*FieldUpdater升级类型原子类：
+    AtomicIntegerFieldUpdater
+        局限：不能是私有属性；不能是静态属性
+    AtomicLongFieldUpdater
+    AtomicReferenceFieldUpdater
+5. Adder累加器
+    LongAdder
+    DoubleAdder
+        java8引入，比AtomicLong效率要高，空间换时间
+        AtomicLong在每一次操作的时候都有flush和refresh操作，保证本地内存和主内存数据一直
+6. Accumulator累加器
+    LongAccumulator
+    DoubleAccumulator

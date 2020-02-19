@@ -22,5 +22,7 @@ public class Ut {
 
     thread4.start();
     Thread.sleep(50);
+
+    throw new RuntimeException("main线程抛出异常");
   }
 }

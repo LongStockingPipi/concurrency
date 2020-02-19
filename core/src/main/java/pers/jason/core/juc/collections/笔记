@@ -1,0 +1,71 @@
+ArrayList和HashMap
+
+早期的同步策略：
+  Vector与Hashtable：是ArrayList和HashMap的同步改造，在内部的方法中使用了Synchronize修饰，保证了线程安全，但是性能下降；
+现在的同步策略：
+  1. 使用工具类“包装”：
+    Collections.synchronizedList(new ArrayList<E>())和Collections.synchronizedMap(new HashMap<K,V>())
+    该种方法是返回了具有线程安全的替代类，但是实际上替代类内部实现方式使用了同步代码块，性能依然是缺陷；
+  2. 同步集合：
+    ConcurrentHashMap和CopyOnWriteArrayList，在保证线程安全的前提下，性能上有提高（CopyOnWriteArrayList适用于读多写少的情况）
+    ConcurrentHashMap：
+    注意：在组合操作下，ConcurrentHashMap并不能保证线程安全
+    解决：1. 使用synchronize修饰代码；2. 使用ConcurrentHashMap自带的原子方法
+    CopyOnWriteArrayList：
+    适用于读多写少情况，读操作完全不加锁，写操作也不会阻塞读操作，只有在同时读的情况下需要进行同步等待；
+    相对于ArrayList，具有线程安全的特点，并且，可以在迭代过程中修改数据，但是在ArrayList中不行；
+    其内部操作是，对于写操作，会拷贝一份实现读写分离，这样存在这数据过期现象；
+    缺点：
+        1. 数据一致性：只能保证最终一致性，并不能保证实时一致性；
+        2. 占用内存大，因为每次读都要创建副本；
+
+Map
+HashMap
+    线程不安全的，迭代的时候不允许修改内容
+Hashtable
+LinkedHashMap：保证了插入顺序，遍历的顺序与插入的顺序一致
+TreeMap：根据键进行排序
+
+
+
+队列：
+
+    1. 并发队列：
+
+        1.1. 阻塞队列：
+            阻塞队列是带有阻塞功能的队列，通常阻塞队列一段给生产者放数据，另一端给消费者拿数据；阻塞队列是线程安全的，因此生产者、消费者都可以是多线程的；
+            取数据的时候，一旦无数据，则阻塞等待，直到有数据；
+            放数据的时候，一旦队列满了，则阻塞等待，直到队列有空闲区域；
+            典型的阻塞队列：
+            <BlockingQueue>:
+            重要方法：
+            1.1.1. put()、take()：
+                具有阻塞功能的获取、放入数据；
+            1.1.2. add()、remove()、element()：
+                不具有阻塞功能的获取、放入数据，一旦数据满了或队列空了，则抛出异常；
+                element()是返回队列头元素，一旦空队列，则抛异常；
+            1.2.3. offer()、poll()、peek()：
+                offer()：以返回boolean值的方式放入数据；
+                poll()：取数据，如果空队列则返回null；取出的同时删除；
+                peek()：取数据，如果空队列则返回null；取出并不会删除；
+                具体实现：
+                [SynchronousQueue]:
+                    特点：
+                    1. 容量为0；
+                    2. 效率高；
+                [ArrayBlockingQueue]:
+                    特点：
+                    1. 有界，需要指定容量；
+                    2. 可以设置是否公平；公平情况下等待时间长的线程会被优先处理；
+                [LinkedBlockingDeque]:
+                    特点：
+                    1. 无界，容量可以达到Integer.MAX_VALUE;
+                [PriorityBlockingQueue]:
+                    特点：
+                    1. 支持优先级，自然排序，不是先进先出
+                    2. 无界，容量不够会进行扩容；
+
+        1.2. 非阻塞队列：
+            [ConcurrentLinkedQueue]: 由于是非阻塞队列，实现线程安全的方法是使用CAS
+
+

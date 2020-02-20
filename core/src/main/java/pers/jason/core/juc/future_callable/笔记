@@ -1,0 +1,34 @@
+Runnable缺陷：
+    无返回值；
+    不能抛出受检异常；
+
+Future：
+    作用：Future主要用于获取子线程的返回结果；
+    与Callable的关系：Future是一个存储器，它存储了Callable的返回结果；
+        1. 使用Future.get()获取Callable接口返回的执行结果，若没有执行完则主线程阻塞；
+        2. 使用Future.isDone()来判断任务是否已经执行完成；
+    主要方法：
+        1. get()：获取结果，有以下五种情况：
+            1.1. 任务正常完成，则立即返回执行结果；
+            1.2. 任务还没开始或正在运行，此时get()会阻塞；
+            1.3. 任务在执行期间抛出异常，则get()会抛出ExecutionException异常；
+            1.4. 任务被取消，会抛出CancellationException异常；
+            1.5. 任务超时，如果调用get(timeout, unit)，阻塞超时，则抛出TimeoutException；
+        2. cancel()：取消任务，有以下三种情况：
+            2.1. 任务还没执行，则返回true;
+            2.2. 任务已经完成，则返回false；
+            2.3. 任务正在执行，则根据参数是否发送中断信号决定；
+        3. isDone()：判断线程是否执行完毕，中断、执行失败都会返回true，因此不代表任务执行成功；
+        4. isCancelled()：任务是否已被取消；
+
+FutureTask：
+    同时实现了Future和Runnable接口
+    使用方式：
+        1. 创建Callable实例，生成FutureTask对象;
+        2. 然后将这个对象当成Runnable对象启动线程（线程池或直接启动）;
+        3. 最后通过FutureTask获取执行结果；
+
+Future注意点：
+    1. 循环获取线程的结果时候，由于线程运行有快有慢，可能会阻塞；
+        解决：使用timeout设置get的超时时间；
+    2. Future的生命周期不能后退，一旦完成任务，则永久停留在”已完成“的状态；

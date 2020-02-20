@@ -20,4 +20,45 @@
     2. 管理线程，提高效率
         2.1. 线程池相关：Executor、Executors、ExecutorService以及常见线程池
         2.2. 能获取子线程运行结果的相关类：Callable、Future、FutureTask等
-    3. 线程协作
+    3. 线程协作:控制并发流程的工具
+            1. Semaphore:信号量，线程只有拿到“许可证”才可以继续运行；主要用来限制有限资源的使用；
+            方法：
+                semaphore(int permit, boolean fair)：信号量数量，以及是否公平；如果是true，则等待的线程基于FIFO排队
+                acquire()：申请信号量
+                release()：释放信号量
+                tryAcquire()：尝试获取信号量，如果获取不到，则可以做其他事，可以不陷入阻塞；
+                tryAcquire(timeout)：同上，可以设置超时时间
+                注意：
+                    申请和释放都不限制个数，可以一次申请多个信号量也可以释放多个信号量；
+                    申请和释放的信号量数量一定要一致；
+
+            2. CyclicBarrier：线程会等待，直到足够多的线程达到了事先规定的数目，才会进行下一步操作；
+                功能上与CountDownLatch很相似，都可以拦截一组线程；
+                与CountDownLatch的区别：
+                    作用点不同：CountDownLatch是用于事件的，而CyclicBarrier用于线程的；
+                    可重用性：CountDownLatch倒数到0之后就不能再用了，而CyclicBarrier在达成数目后可以重新轮询使用；
+
+            3. CountDownLatch：倒数结束之前，线程处于等待状态，直到倒数结束，此线程才继续工作；
+            方法：
+                CountDownLatch(int count)：需要倒数的值；
+                await()：调用该方法的线程会被挂起，他会等待count值为0的时候才继续运行；
+                countDown()：将count值减1，直到0的时候，才会唤醒等待的线程；
+            应用：
+                1. 一个线程等待多个线程执行完 - CountDownLatchDemo1
+                2. 多个线程等待一个线程执行完 - CountDownLatchDemo2
+
+            4. Condition：条件对象；
+            作用：
+            当线程1想要等待某个条件达成的时候，可以执行await()方法；此时会进入阻塞状态；
+            此时线程2完成了这个条件后，执行signal()方法，JVM就会寻找等到这个Condition的线程，并唤醒它；
+            可以实现生产者消费者模式，是一个wait()/notify()的另一个版本
+
+
+AQS：
+三个重要组成部分：
+    1. state
+        根据实现类的不同含义不同，
+        比如在Semaphore中就是剩余许可证的数量，在CountDownLatch中就是还需要倒数的值，在ReentrantLock中表示重入次数（ReentrantLock是可重入锁）
+    2. 控制线程抢锁和配合的FIFO队列
+    3. 期望协作工具类实现的获取、释放等重要方法
+        这类方法往往需要配合state使用，判断线程是否可以执行；
